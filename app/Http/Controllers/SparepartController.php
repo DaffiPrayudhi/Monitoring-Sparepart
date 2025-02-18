@@ -8,6 +8,9 @@ use App\Models\Sparepart;
 use Yajra\DataTables\Facades\DataTables;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\SparepartsImports;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use Illuminate\Http\Response;
 use DB;
 
 class SparepartController extends Controller
@@ -139,6 +142,51 @@ class SparepartController extends Controller
             })
             ->rawColumns(['action'])
             ->make(true);
+    }
+
+    public function export()
+    {
+        $spareparts = Sparepart::select('nama_barang', 'kode_barang', 'address', 'total_qty', 'lifetime', 'leadtime', 'min_stock', 'part_masuk','part_keluar','stock_akhir_wrhs', 'uom','harga','mata_uang','vendor',)->get();
+        
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        
+        $headers = ['Nama Barang', 'Kode Barang', 'Address', 'Total Qty', 'Lifetime (week)', 'Leadtime (week)', 'Minimal Stock', 'Part Masuk', 'Part Keluar', 'Stock Akhir Warehouse', 'UOM', 'Harga', 'Mata Uang', 'Vendor'];
+        $column = 'A';
+        foreach ($headers as $header) {
+            $sheet->setCellValue($column . '1', $header);
+            $column++;
+        }
+        
+        $row = 2;
+        foreach ($spareparts as $sparepart) {
+            $sheet->setCellValue('A' . $row, $sparepart->nama_barang);
+            $sheet->setCellValue('B' . $row, $sparepart->kode_barang);
+            $sheet->setCellValue('C' . $row, $sparepart->address);
+            $sheet->setCellValue('D' . $row, $sparepart->total_qty);
+            $sheet->setCellValue('E' . $row, $sparepart->lifetime);
+            $sheet->setCellValue('F' . $row, $sparepart->leadtime);
+            $sheet->setCellValue('G' . $row, $sparepart->min_stock);
+            $sheet->setCellValue('H' . $row, $sparepart->part_masuk);
+            $sheet->setCellValue('I' . $row, $sparepart->part_keluar);
+            $sheet->setCellValue('J' . $row, $sparepart->stock_akhir_wrhs);
+            $sheet->setCellValue('K' . $row, $sparepart->uom);
+            $sheet->setCellValue('L' . $row, $sparepart->harga);
+            $sheet->setCellValue('M' . $row, $sparepart->mata_uang);
+            $sheet->setCellValue('N' . $row, $sparepart->vendor);
+            $row++;
+        }
+        
+        foreach (range('A', 'I') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+        
+        $writer = new Xlsx($spreadsheet);
+        $fileName = 'spareparts.xlsx';
+        
+        return response()->streamDownload(function() use ($writer) {
+            $writer->save('php://output');
+        }, $fileName, ['Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']);
     }
     
     
