@@ -104,6 +104,7 @@
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-body">
+                        <a href="{{ route('spareparts.export') }}" class="btn btn-primary">Export to Excel</a>
                         <table id="spareparts-table" class="table table-hover table-bordered table-responsive">
                             <thead class="table-header">
                                 <tr>
