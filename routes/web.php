@@ -44,6 +44,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    //export excel
+    Route::get('/spareparts/export', [SparepartController::class, 'export'])->name('spareparts.export');
     //import excel
     Route::get('/import', function() {
         return view('pemindahan.import'); 
